@@ -41,5 +41,3 @@ public class SimplePromptService {
         return messages;
     }
 }
-
-
