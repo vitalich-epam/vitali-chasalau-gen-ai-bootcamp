@@ -15,32 +15,21 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class AiController {
 
-    private final SimplePromptService promptService;
     private final KernelPromptService kernelPromptService;
-
-    @PostMapping("/prompt")
-    public ResponseEntity<PromptResponse> generateResponse(@RequestBody PromptRequest prompt) {
-        log.info("prompt value: {}", prompt);
-        return ResponseEntity.ok()
-                .body(new PromptResponse(promptService.executePrompt(prompt.getInput())));
-    }
-
-    @GetMapping("/prompt")
-    public ResponseEntity<PromptResponse> generateResponse(@RequestParam(name="q") String prompt) {
-        log.info("prompt value: {}", prompt);
-        return ResponseEntity.ok()
-                .body(new PromptResponse(promptService.executePrompt(prompt)));
-    }
 
     @PostMapping("/kernel")
     public ResponseEntity<PromptResponse> generateResponseWithKernel(@RequestBody PromptRequest prompt) {
         return ResponseEntity.ok()
-                .body(new PromptResponse(kernelPromptService.executePromptWithKernel(prompt.getInput())));
+                .body(new PromptResponse(kernelPromptService.executePromptWithKernel(prompt.getInput(),
+                        prompt.getTemperature(),
+                        prompt.getMaxTokens())));
     }
 
     @GetMapping("/kernel")
-    public ResponseEntity<PromptResponse> generateResponseWithKernel(@RequestParam(name="q") String prompt) {
+    public ResponseEntity<PromptResponse> generateResponseWithKernel(@RequestParam(name = "q") String prompt,
+                                                                     @RequestParam(defaultValue = "0") Double temperature,
+                                                                     @RequestParam(defaultValue = "200") Integer maxTokens) {
         return ResponseEntity.ok()
-                .body(new PromptResponse(kernelPromptService.executePromptWithKernel(prompt)));
+                .body(new PromptResponse(kernelPromptService.executePromptWithKernel(prompt, temperature, maxTokens)));
     }
 }
