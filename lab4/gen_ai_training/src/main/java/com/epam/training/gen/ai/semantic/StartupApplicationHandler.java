@@ -18,8 +18,6 @@ public class StartupApplicationHandler implements ApplicationListener<Applicatio
 
     @Override
     public void onApplicationEvent(@NonNull ApplicationReadyEvent event) {
-        promptService.getChatCompletions();
+//        promptService.getChatCompletions();
     }
 }
-
-
