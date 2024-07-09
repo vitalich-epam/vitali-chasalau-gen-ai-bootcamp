@@ -2,6 +2,8 @@ package com.epam.training.gen.ai.controller;
 
 import com.epam.training.gen.ai.service.EmbeddingService;
 import lombok.RequiredArgsConstructor;
+import org.apache.pdfbox.io.IOUtils;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingClient;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,10 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +39,10 @@ public class EmbeddingController {
     }
 
     @GetMapping("/ai/embedding/search")
-    public List search(@RequestParam(value = "message", defaultValue = "prompt engineering") String message) {
-        return this.embeddingService.getDocuments(message);
+    public List<Document> search(@RequestParam(value = "message", defaultValue = "prompt engineering") String message,
+                                 @RequestParam(value = "similarity", defaultValue = "0.1") double similarityThreshold,
+                                 @RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return this.embeddingService.searchDocuments(message, similarityThreshold, limit);
     }
 
     @PostMapping("/ai/upload-embedding")
@@ -58,21 +61,15 @@ public class EmbeddingController {
     }
 
     private File getUploadedFile(MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        Path path = Paths.get("target/uploads/" + fileName);
-
-        if (path.toFile().exists()) {
-            path.toFile().delete();
-        }
-
         try {
-            Files.copy(file.getInputStream(), path);
+            File target = File.createTempFile("embeddingUpload", ".pdf");
+            OutputStream out = new FileOutputStream(target);
+            IOUtils.copy(file.getInputStream(), out);
+            out.close();
+
+            return target;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        File uploadedFile = path.toFile();
-
-        return uploadedFile;
     }
 }

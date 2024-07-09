@@ -5,6 +5,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
@@ -27,15 +28,17 @@ public class EmbeddingService {
         Document document = new Document(text);
         vectorStore.add(List.of(document));
     }
-
-    public List<Document> getDocuments(String searchText) {
-        return vectorStore.similaritySearch(searchText);
+    public List<Document> searchDocuments(String searchText, double threshold, int limit) {
+        SearchRequest searchRequest = SearchRequest.query(searchText)
+                .withSimilarityThreshold(threshold)
+                .withTopK(limit);
+        return vectorStore.similaritySearch(searchRequest);
     }
 
     private Document convertPdfToDocument(File pdfFile) {
         String text;
         PDFTextStripper pdfTextStripper = new PDFTextStripper();
-        try (PDDocument pdDocument = Loader.loadPDF(pdfFile);) {
+        try (PDDocument pdDocument = Loader.loadPDF(pdfFile)) {
             text = pdfTextStripper.getText(pdDocument);
         } catch (IOException e) {
             throw new RuntimeException(e);
