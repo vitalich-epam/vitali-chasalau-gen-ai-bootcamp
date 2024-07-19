@@ -1,0 +1,57 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: User
+      changes:
+        - createTable:
+            tableName: file
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(255)
+        - createIndex:
+            indexName: file_name
+            tableName: file
+            columns:
+              - column:
+                  name: name
+            validate: true
+        - createTable:
+            tableName: content
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: content
+                  type: varchar(4096)
+              - column:
+                  name: index
+                  type: integer
+              - column:
+                  name: file
+                  type: integer
+        - createIndex:
+            indexName: content_file_index
+            tableName: content
+            columns:
+              - column:
+                  name: file
+              - column:
+                  name: index
+            validate: true
+        - addForeignKeyConstraint:
+            constraintName: fk_content_file
+            baseTableName: content
+            baseColumnNames: file
+            referencedTableName: file
+            referencedColumnNames: id
+            validate: true
